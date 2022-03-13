@@ -50,12 +50,24 @@ module.exports.follow = async (req, res) => {
 		return res.status(400).send("Id unknown :" + req.params.id);
 
 	try {
-		await userModel.findByIdAndUpdate(req.params.id),
+		//add to the follower list
+		await userModel.findByIdAndUpdate(
+			req.params.id,
 			{ $addToSet: { following: req.body.idToFollow } },
 			{ new: true, upsert: true },
 			(err, docs) => {
-				!err ? res.statut
-		}
+				!err ? res.statut(201).json(docs) : res.status(400).json(err);
+			},
+		);
+		//add to follow list
+		await userModel.findByIdAndUpdate(
+			req.body.idToFollow,
+			{ $addToSet: { followers: [req.params.id] } },
+			{ new: true, upsert: true },
+		),
+			(err, docs) => {
+				if (err) return res.status(400).json(err);
+			};
 	} catch (err) {
 		return res.status(500).json({ message: err });
 	}
