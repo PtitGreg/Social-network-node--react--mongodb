@@ -7,8 +7,8 @@ const userSchema = new mongoose.Schema(
 		pseudo: {
 			type: String,
 			required: true,
-			minLength: 3,
-			maxLength: 55,
+			minlength: 3,
+			maxlength: 55,
 			unique: true,
 			trim: true,
 		},
@@ -16,13 +16,14 @@ const userSchema = new mongoose.Schema(
 			type: String,
 			required: true,
 			validate: [isEmail],
+			unique: true,
 			lowercase: true,
 			trim: true,
 		},
 		password: {
 			type: String,
 			required: true,
-			minLength: 6,
+			minlength: 6,
 			max: 1024,
 		},
 		picture: {
@@ -47,9 +48,23 @@ const userSchema = new mongoose.Schema(
 		timestamps: true,
 	},
 );
+// play function before save into db,
 userSchema.pre("save", async function (next) {
 	const salt = await bcrypt.genSalt();
 	this.password = await bcrypt.hash(this.password, salt);
 	next();
 });
+
+userSchema.statics.login = async function (email, password) {
+	const user = await this.findOne({ email });
+	if (user) {
+		const auth = await bcrypt.compare(password, user.password);
+		if (auth) {
+			return user;
+		}
+		throw Error("incorrect password");
+	}
+	throw Error("incorrect email");
+};
+
 module.exports = mongoose.model("user", userSchema);

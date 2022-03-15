@@ -25,7 +25,7 @@ module.exports.updateUser = async (req, res) => {
 				{
 					$set: { bio: req.body.bio },
 				},
-				{ new: true, upsert: true, setDefaultsOnInsert: true },
+				// { new: true, upsert: true, setDefaultsOnInsert: true },
 			)
 			.then((data) => res.json(data))
 			.catch((err) => res.status(500).json({ message: err }));
@@ -38,13 +38,13 @@ module.exports.deleteUser = async (req, res) => {
 		return res.status(400).json("Id unknown : " + req.params.id);
 
 	try {
-		await userModel.remove({ _id: req.params.id }).exec();
+		await userModel.deleteOne({ _id: req.params.id });
 		res.status(200).json("Id removed : " + req.params.id);
 	} catch (error) {
 		return res.status(500).json({ message: error });
 	}
 };
-//A revoir
+//to be check
 module.exports.follow = async (req, res) => {
 	if (
 		!objectId.isValid(req.params.id) ||
@@ -56,26 +56,26 @@ module.exports.follow = async (req, res) => {
 		// add to the follower list
 		await userModel
 			.findByIdAndUpdate(
-				req.params.id,
+				{_id:req.params.id},
 				{ $addToSet: { followers: req.body.idToFollow } },
 				{ new: true, upsert: true, setDefaultsOnInsert: true },
 			)
 			.then((data) => res.json(data))
 			.catch((err) => res.status(500).json({ message: err }));
-			// add to following list
-			await userModel
-				.findByIdAndUpdate(
-					req.body.idToFollow,
-					{ $addToSet: { following: req.params.id } },
-					{ new: true, upsert: true, setDefaultsOnInsert: true },
-				)
-				.then((data) => res.json(data))
-				.catch((err) => res.status(500).json({ message: err }));
+		// add to following list
+		await userModel
+			.findByIdAndUpdate(
+				{_id:req.body.idToFollow},
+				{ $addToSet: { following: req.params.id } },
+				{ new: true, upsert: true, setDefaultsOnInsert: true },
+			)
+			.then((data) => res.json(data))
+			.catch((err) => res.status(500).json({ message: err }));
 	} catch (err) {
 		return res.status(500).json({ message: err });
 	}
 };
-//A revoir
+//to be Check
 module.exports.unfollow = async (req, res) => {
 	if (
 		!objectId.isValid(req.params.id) ||
@@ -100,7 +100,7 @@ module.exports.unfollow = async (req, res) => {
 				// { new: true, upsert: true, setDefaultsOnInsert: true },
 			)
 			.then((data) => res.json(data))
-			.catch((err) => res.status(500).json({ message: err }));
+			.catch((err) => res.status(400).json({ message: err }));
 	} catch (err) {
 		return res.status(500).json({ message: err });
 	}
