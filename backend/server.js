@@ -1,5 +1,6 @@
 const express = require("express");
 const userRoutes = require("./routes/userRoutes");
+const postRoutes = require("./routes/postRoutes")
 const cookieParser = require("cookie-parser");
 const { checkUser, requireAuth  } = require("./middleware/authMiddleware");
 const app = express();
@@ -18,6 +19,7 @@ app.get("/jwtid", requireAuth, (req, res) => {
 
 //Routes
 app.use("/api/user", userRoutes);
+app.use("/api/post", postRoutes);
 
 //Server
 app.listen(process.env.PORT, () => {
